@@ -11,8 +11,8 @@ void BackgroundSubtractionSingleGauss::Apply(cv::Mat& src, cv::Mat& dst)
 
 	dst = cv::Mat(src.size(), src.type());
 	const int channels = src.channels();
-	float a1 = 0.05;
-	float a2 = 0.02;
+	float a1 = 0.05f;
+	float a2 = 0.02f;
 
 
 	//Начальная диспресия и матожидание

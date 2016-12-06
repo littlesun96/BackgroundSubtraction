@@ -14,7 +14,6 @@ private:
 	cv::Mat model;
 	const int INITIAL_FRAMES_COUNT = 5;
 	int count = 0;
-	const float DELTA_THRESHOLD = 2;
 	bool initialFrames = false;
 
 public:
@@ -27,7 +26,7 @@ public:
 	~BackgroundSubtractionSingleGauss();
 
 protected:
-
+	const float DELTA_THRESHOLD = 2;
 };
 
 #endif // !BACKGROUND_SUBTRACTION_SINGLE_GAUSS

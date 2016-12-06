@@ -21,12 +21,12 @@ include_directories(
 # ----------------------------------------------------------------------
 set(SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp BackgroundSubtractionAverage.cpp 
-	BackgroundSubtractionBase.cpp BackgroundSubtractionSingleGauss.cpp
+	BackgroundSubtractionBase.cpp BackgroundSubtractionSingleGauss.cpp BackgroundSubtractionMultiGauss.cpp
 )
 
 set(HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/BackgroundSubtractionAverage.h BackgroundSubtractionBase.h
-	BackgroundSubtractionSingleGauss.h
+	BackgroundSubtractionSingleGauss.h BackgroundSubtractionMultiGauss.h
 )
 
 
