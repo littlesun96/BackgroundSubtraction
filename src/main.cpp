@@ -12,14 +12,14 @@
 
 int main(int argc, char* argv[])
 {
-	//std::string fileName("../../../3.jpg");
-	if (argc < 2)
+	std::string fileName("../../atrium.avi");
+	if (argc > 1)
 	{
-		return -1;
-		//fileName = argv[1];
+		//return -1;
+		fileName = argv[1];
 	}
 
-	std::string fileName = argv[1];
+	//std::string fileName = argv[1];
 	//int t = atoi(argv[2]);
 
 	cv::namedWindow("image", cv::WINDOW_NORMAL);

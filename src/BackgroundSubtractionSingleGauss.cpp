@@ -2,38 +2,6 @@
 
 BackgroundSubtractionSingleGauss::~BackgroundSubtractionSingleGauss() {}
 
-//Подсчет начальной дисперсии
-/*void BackgroundSubtractionSingleGauss::countInitialVariance() 
-{
-	if (queue.empty())
-		return;
-	cv::Mat m = queue.front();
-	queue.pop();
-	//const int channels = m.channels();
-	cv::MatIterator_<uchar> it1, end1, itVar, itMean;
-	itMean = mean.begin<uchar>();
-	itVar = variance.begin<uchar>();
-	for (it1 = m.begin<uchar>(), end1 = m.end<uchar>(); it1 != end1; ++it1) 
-	{
-		*itVar += pow(*it1 - *itMean, 2);
-		itMean++;
-		itVar++;
-	}
-	countInitialVariance();
-}*/
-
-void BackgroundSubtractionSingleGauss::stdDev(int i, int k, std::vector<cv::MatIterator_<uchar>> a) 
-{
-	double sum = 0;
-	double sq_sum = 0;
-	for (int q = 0; q < INITIAL_FRAMES_COUNT; ++q) {
-		sum += *a[q];
-		sq_sum += (*a[q]) * (*a[q]);
-		a[q]++;
-	}
-	meanArray[i].push_back(sum / (INITIAL_FRAMES_COUNT - 1));
-	varianceArray[i].push_back(sq_sum / (INITIAL_FRAMES_COUNT - 1) - meanArray[i][k] * meanArray[i][k]);
-}
 
 void BackgroundSubtractionSingleGauss::Apply(cv::Mat& src, cv::Mat& dst) 
 {
@@ -43,86 +11,70 @@ void BackgroundSubtractionSingleGauss::Apply(cv::Mat& src, cv::Mat& dst)
 
 	dst = cv::Mat(src.size(), src.type());
 	const int channels = src.channels();
-	double a = 0.02;
-	//int n = 10;
+	float a1 = 0.05;
+	float a2 = 0.02;
 
-	//Первые кадры в очередь
-	if (!initialFrames && queue.size() < INITIAL_FRAMES_COUNT) 
-	{
-		queue.push(src);
-		return;
-	}
 
-	//Набралось заданное количество
-	if (!initialFrames && queue.size() == INITIAL_FRAMES_COUNT) 
+	//Начальная диспресия и матожидание
+	if (count < INITIAL_FRAMES_COUNT) 
 	{
-		/*mean = cv::Mat(src.size(), src.type());
-		variance = cv::Mat(src.size(), src.type());
-		//Подсчет начального матожидания
-		for (int i = 0; i < INITIAL_FRAMES_COUNT; i++) 
+
+		if (model.size() != src.size())
 		{
-			cv::Mat x = queue.front();
-			queue.pop();
-			mean += x;
-			queue.push(x);
-		}
-		mean /= INITIAL_FRAMES_COUNT - 1;
-		//Подсчет дисперсии
-		countInitialVariance();
-		variance /= INITIAL_FRAMES_COUNT - 1;*/
-
-		std::vector<cv::MatIterator_<uchar>> a;
-		for (int q = 0; q < INITIAL_FRAMES_COUNT; q++) {
-			a.push_back(queue.front().begin<uchar>());
-			queue.pop();
+			model = cv::Mat(src.size(), CV_32FC2, cv::Scalar(0, 0, 0));
 		}
 
-		for (int i = 0; i < src.rows; i++)
+		
+		for (int y = 0; y < src.rows; ++y)
 		{
-			meanArray.push_back(std::vector<double>());
-			varianceArray.push_back(std::vector<double>());
-			for (int k = 0; k < src.cols; k++)
+			for (int x = 0; x < src.cols; ++x)
 			{
-				stdDev(i, k, a);
+				cv::Vec2f v;
+				v[0] = src.at<uchar>(y, x);
+				v[1] = v[0] * v[0];
+
+				model.at<cv::Vec2f>(y, x) += v;
 			}
 		}
 
+		count++;
+	}
+
+	//Набралось заданное количество
+	if (!initialFrames && count == INITIAL_FRAMES_COUNT) {
+		for (int y = 0; y < src.rows; ++y)
+		{
+			for (int x = 0; x < src.cols; ++x)
+			{
+				model.at<cv::Vec2f>(y, x)[0] /= INITIAL_FRAMES_COUNT;
+				model.at<cv::Vec2f>(y, x)[1] = model.at<cv::Vec2f>(y, x)[1] / (INITIAL_FRAMES_COUNT - 1) - model.at<cv::Vec2f>(y, x)[0] * model.at<cv::Vec2f>(y, x)[0];
+			}
+		}
 		initialFrames = true;
 	}
-	/*if (mean.empty()) {
-		src.copyTo(mean);
-		variance = cv::Mat::eye(src.size(), src.type()) * 20;
-		return;
-	}*/
 
 	switch (channels) 
 	{
 		case 1: 
 		{
-			int i = 0;
-			int k = 0;
-			cv::MatIterator_<uchar> it1, end1;
-			cv::MatIterator_<uchar> it2 = dst.begin<uchar>();
-			//std::vector<std::vector<double>> m;
-			//std::vector<std::vector<double>> v;
-			for (it1 = src.begin<uchar>(), end1 = src.end<uchar>(); it1 != end1; ++it1) 
+			for (int y = 0; y < src.rows; ++y)
 			{
-				if (k >= src.cols)
+				for (int x = 0; x < src.cols; ++x)
 				{
-					k = 0;
-					i++;
+					cv::Vec2f v = model.at<cv::Vec2f>(y, x);
+					uchar u = src.at<uchar>(y, x);
+					dst.at<uchar>(y, x) = ((abs(v[0] - u))/sqrt(v[1]) > DELTA_THRESHOLD) ? 255 : 0;
+					{
+						v[0] = (1 - a1) * v[0] + a1 * u;
+						v[1] = (1 - a2) * v[1] + a2 * (u - v[0]) * (u - v[0]);
+						model.at<cv::Vec2f>(y, x) = v;
+						
+					}
+					
 				}
-				//Определяем принадлежность к переднему/заднему плану
-				*it2 = ((abs(meanArray[i][k] - *it1)) / sqrt(varianceArray[i][k]) > DELTA_THRESHOLD) ? 255 : 0;
-				//Пересчитываем матожидание
-				meanArray[i][k] = (1 - a) * meanArray[i][k] + a * (*it1);
-				//Пересчитываем дисперсию
-				varianceArray[i][k] = (1 - a) * varianceArray[i][k] + a * (pow(*it1 - meanArray[i][k], 2));
-				it2++;
-				k++;
 			}
 
-			cv::morphologyEx(dst, dst, cv::MORPH_OPEN, kern3);
+			//cv::morphologyEx(dst, dst, cv::MORPH_OPEN, kern3);
 
 			break;
 		}

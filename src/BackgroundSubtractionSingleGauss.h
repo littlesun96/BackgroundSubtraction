@@ -11,17 +11,11 @@
 class BackgroundSubtractionSingleGauss : public BackgroundSubtractionBase {
 
 private:
-	//cv::Mat mean;
-	//cv::Mat variance;
-	std::vector<std::vector<double>> meanArray;
-	std::vector<std::vector<double>> varianceArray;
-	//Очередь из начальных INITIAL_FRAMES_COUNT кадров для подсчета начального матожидания и дисперсии
-	std::queue<cv::Mat> queue;
-	const int INITIAL_FRAMES_COUNT = 3;
-	const int DELTA_THRESHOLD = 3;
+	cv::Mat model;
+	const int INITIAL_FRAMES_COUNT = 5;
+	int count = 0;
+	const float DELTA_THRESHOLD = 2;
 	bool initialFrames = false;
-	//void countInitialVariance();
-	void stdDev(int i, int k, std::vector<cv::MatIterator_<uchar>> a);
 
 public:
 
