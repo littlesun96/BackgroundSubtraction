@@ -11,14 +11,21 @@
 class BackgroundSubtractionMultiGauss : public BackgroundSubtractionSingleGauss {
 
 private:
-	std::vector<cv::Mat> models;
+	//std::vector<cv::Mat> models;
 	std::vector<cv::Vec3f> vecModels;
+	std::vector<std::vector<std::vector<cv::Vec3f>>> mats;
+
+	float q_rsqrt(float number);
+
 	//cv::Mat status;
 	const int MODELS_COUNT = 2;
-	const float A_MEAN = 0.02f;
-	const float A_VARIANCE = 0.02f;
-	const float A_WEIGHT = 0.3f;
-	const float DELTA_WEIGHT_THRESHOLD = 0.4f;
+	const float A_MEAN = 0.01f;
+	const float A_VARIANCE = 0.01f;
+	const float A_WEIGHT = 0.2f;
+	const float A_MEAN_NEG = 1 - A_MEAN;
+	const float A_VARIANCE_NEG = 1 - A_VARIANCE;
+	const float A_WEIGHT_NEG = 1 - A_WEIGHT;
+	const float DELTA_WEIGHT_THRESHOLD = 0.2f;
 
 	//int modelWithMinWeight(int y, int x);
 	//void stepTwo(int y, int x, cv::Mat& dst);
