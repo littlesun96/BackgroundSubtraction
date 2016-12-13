@@ -26,7 +26,7 @@ public:
 	~BackgroundSubtractionSingleGauss();
 
 protected:
-	const float DELTA_THRESHOLD = 2.0f;
+	const float DELTA_THRESHOLD = 2.5f;
 };
 
 #endif // !BACKGROUND_SUBTRACTION_SINGLE_GAUSS

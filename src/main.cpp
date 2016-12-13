@@ -14,8 +14,8 @@
 
 int main(int argc, char* argv[])
 {
-	//std::string fileName("../../video/16_01_58.060.avi");
-	std::string fileName("../../atrium.avi");
+	std::string fileName("../../video/16_00_06.789.avi");
+	//std::string fileName("../../atrium.avi");
 	if (argc > 1)
 	{
 		//return -1;

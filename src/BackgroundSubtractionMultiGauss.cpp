@@ -105,7 +105,7 @@ float BackgroundSubtractionMultiGauss::q_rsqrt(float number)
 	i = 0x5f3759df - (i >> 1);               // what the fuck? 
 	y = *(float *)&i;
 	y = y * (threehalfs - (x2 * y * y));   // 1st iteration
-	//	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+	// y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
 
 	return y;
 }
@@ -188,7 +188,7 @@ void BackgroundSubtractionMultiGauss::Apply(cv::Mat& src, cv::Mat& dst)
 				{
 					//stepTwo(y, x, dst);
 					statusModel = (vecModels[0][0] > vecModels[1][0]) ? 1 : 0;
-					if (vecModels[statusModel][0] != 0)
+					if (vecModels[statusModel][0] == 0)
 					{
 						//stepFour(y, x, dst);
 						for (int i = 0; i < MODELS_COUNT; i++)
@@ -220,6 +220,6 @@ void BackgroundSubtractionMultiGauss::Apply(cv::Mat& src, cv::Mat& dst)
 		}
 	}
 
-	//cv::morphologyEx(dst, dst, cv::MORPH_OPEN, kern3);
-	_sleep(10);
+	cv::morphologyEx(dst, dst, cv::MORPH_OPEN, kern3);
+	//_sleep(30);
 }
